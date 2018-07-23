@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block 'body' %}
+
+<div class="breadcrumbs">
+	<a href="/iot/dashboard/">Home</a>  › 
+	Inactive Devices
+</div>
+
+<br/>
+
+{% if inactive_trackers|length < 10 %}
+<style>
+.inactive-tracker thead td, .inactive-tracker tbody td:last-child {
+    float: left;
+    width: 16.55%;
+}
+</style>
+{% endif %}
+
+{% if inactive_gateways %}
+    <div class="table-responsive col-xs-12 col-sm-12 col-md-5">
+
+          <h4 style="color:blue;text-align:center"><i>Inactive Gateways Summary</i></h4>
+
+          <table class="features-table table" border=2> <!-- style="height:200px; overflow-y:scroll; display:block;">--!>
+          <thead><tr>
+          <tr>
+          <td align="center"><i>Region</i></td>
+          <td align="center"><i>Device ID</i></td>
+          <td align="center"><i>Active</i></td>
+          </tr>
+          </thead>
+          {% for gateway in inactive_gateways %}
+            <tr>
+                <td align="center"><i>{{gateway.region.name}}</i></td>
+                <td align="center"> {{gateway.device_id}} </td>
+                <td align="center"> <b style="color:red;">&#10008;</b> </td>
+            </tr>
+        {% endfor %}
+
+         </table>
+    </div>
+
+{% endif %}
+
+{% if inactive_masters %}
+    <div class="table-responsive col-xs-12 col-sm-12 col-md-7">
+
+          <h4 style="color:blue;text-align:center"><i>Inactive Masters Summary</i></h4>
+
+          <table class="features-table table" border=2> 
+          <!--<table class="features-table" border=2 style="height:200px; overflow-y:scroll; display:block;">--!>
+          <thead><tr>
+          <td align="center"><i>Region</i></td>
+          <td align="center"><i>Device ID</i></td>
+          <td align="center"><i>Gateway ID</i></td>
+          <td align="center"><i>Active</i></td>
+          </tr>
+          </thead>
+          {% for master in inactive_masters %}
+            <tr>
+                <td align="center"><i>{{master.gateway.region.name}}</i></td>
+                <td align="center"> {{master.device_id}} </td>
+                <td align="center"> {{master.gateway.device_id}} </td>
+                <td align="center"> <b style="color:red;">&#10008;</b> </td>
+            </tr>
+        {% endfor %}
+
+         </table>
+    </div>
+
+{% endif %}
+
+
+{% if inactive_trackers %}
+    <div class="tracker-header table-responsive col-xs-12">
+
+          <h4 style="color:blue;text-align:center"><i>Inactive Trackers Summary</i> </h4>
+
+          <table class="features-table table inactive-tracker" border=2 style="-ms-overflow-style: scrollbar;">
+          <thead><tr>
+          <td align="center"><i>Region</i></td>
+          <td align="center"><i>Device ID</i></td>
+          <td align="center"><i>Master ID</i></td>
+          <td align="center"><i>Gateway ID</i></td>
+          <td align="center"><i>ZigBee</i></td>
+          <td align="center"><i>RS485</i></td>
+          </tr>
+          </thead>
+          <tbody style="max-height:400px;overflow-y:auto;">
+          {% for tracker in inactive_trackers %}
+            <tr>
+                <td align="center"><i>{{tracker.master_controller.gateway.region.name}}</i></td>
+                <td align="center"> {{tracker.device_id}} </td>
+                <td align="center">{{tracker.master_controller.device_id}}</td>
+                <td align="center"> {{tracker.master_controller.gateway.device_id}} </td>
+                <td align="center">
+                      {% ifequal tracker.wireless_connectivity True %}
+                          <b>&#10004;</b>
+                      {% else %}
+                          <b style="color:red;">&#10008;</b>
+                      {% endifequal %}
+
+                </td>
+                <td align="center">
+                      {% ifequal tracker.wired_connectivity True %}
+                          <b>&#10004;</b>
+                      {% else %}
+                          <b style="color:red;">&#10008;</b>
+                      {% endifequal %}
+                </td>
+            </tr>
+        {% endfor %}
+         </tbody>
+         </table>
+    </div>
+
+{% endif %}
+
+{% endblock %}
+
+

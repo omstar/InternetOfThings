@@ -1,0 +1,3 @@
+For perfomance tuning use pg_bouncer
+
+Run command: pgbouncer -d /usr/local/etc/pgbouncer.ini

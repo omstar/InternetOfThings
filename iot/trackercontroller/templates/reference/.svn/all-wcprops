@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/SVN/Solar-Tracker/!svn/ver/145/Trunk/Source/Web/iot/trackercontroller/templates/reference
+END
+master_controllers.html
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/SVN/Solar-Tracker/!svn/ver/145/Trunk/Source/Web/iot/trackercontroller/templates/reference/master_controllers.html
+END
+gateways.html
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/SVN/Solar-Tracker/!svn/ver/145/Trunk/Source/Web/iot/trackercontroller/templates/reference/gateways.html
+END
+base.html
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/SVN/Solar-Tracker/!svn/ver/145/Trunk/Source/Web/iot/trackercontroller/templates/reference/base.html
+END

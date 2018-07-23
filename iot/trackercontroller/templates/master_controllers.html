@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load myfilters %}
+{% block 'body' %}
+
+
+<div class="breadcrumbs">
+	<a href="/iot/dashboard/">Home</a>  › 
+	<a href="/iot/gateways/">Gateways</a>  ›
+	{{masters.0.gateway.device_id}}  › Master Controllers
+</div>
+
+<div style="float:left; min-width: 400px; max-width: 100%; height: 1px; margin: 0 "></div>
+
+<br/>
+<div class="block-header">
+
+
+
+<style>
+.tree {
+    min-height:20px;
+    padding:19px;
+    margin-bottom:20px;
+    background-color:#eee;
+    border:1px solid #999;
+    -webkit-border-radius:4px;
+    -moz-border-radius:4px;
+    border-radius:4px;
+    -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+}
+.tree li {
+    list-style-type:none;
+    margin:0;
+    padding:5px 5px 0 5px;
+    position:relative
+}
+.tree li::before, .tree li::after {
+    content:'';
+    left:-20px;
+    position:absolute;
+    right:auto
+}
+.tree li::before {
+    border-left:1px solid #999;
+    bottom:50px;
+    height:100%;
+    top:0;
+    width:1px
+}
+.tree li::after {
+    border-top:1px solid #999;
+    height:20px;
+    top:25px;
+    width:25px
+}
+.tree li span {
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border:1px solid #999;
+    border-radius:5px;
+    display:inline-block;
+    padding:3px 8px;
+    text-decoration:none
+}
+.tree li.parent_li>span {
+    cursor:pointer
+}
+.tree>ul>li::before, .tree>ul>li::after {
+    border:0
+}
+.tree li:last-child::before {
+    height:30px
+}
+.tree li.parent_li>span:hover, .tree li.parent_li>span:hover+ul li span {
+    background:#eee;
+    border:1px solid #94a0b4;
+    color:#000
+}
+
+
+
+.tree li.parent_li>span {
+    background:#a89578;
+    border:1px solid #94a0b4;
+    color:#000;
+    width:120px;
+    text-align:center;
+}
+.tree li.parent_li>ul>li>span {
+    background:#b2b591;
+    border:1px solid #94a0b4;
+    color:#000
+}
+.tree li.parent_li>ul>li.trackerlist-child-reconfigured>span {
+    background:#ff7b7b;
+    border:1px solid #94a0b4;
+    color:#000
+}
+.tree li.parent_li>ul>li>ul>li>span {
+    background:#91b5a6;
+    border:1px solid #94a0b4;
+    color:#000
+}
+
+
+#trackerlist li{ 
+display:none;
+}
+
+li.parent_li>a, li.parent_li>ul>li>a {
+color: blue;
+font-size: 14px;
+}
+
+li>a>i {
+color: black;
+}
+
+.numeric-width {
+  display:inline-block;
+  width:81px;
+  font-family:Arial;
+}
+.char-width {
+  display:inline-block;
+  width:91px;
+  font-family:Arial;
+}
+
+.btn{display:inline-block;padding:3px 6px;margin-bottom:0;font-size:10px;font-weight:normal;line-height:1.428571429;text-align:center;white-space:nowrap;vertical-align
+:middle;cursor:pointer;background-image:none;border:1px solid transparent;border-radius:4px;-webkit-user-select:none;-moz-user-select:none;-ms-user-se
+lect:none;-o-user-select:none;user-select:none; background-color:#a6bddb; color:#000;}
+
+.blink_failed {
+    animation-duration: 1s;
+    animation-name: blink_failed;
+    animation-iteration-count: infinite;
+    animation-timing-function: steps(2, start);
+}
+@keyframes blink_failed {
+from {
+       color: blue;
+    }
+to {
+    color: red;
+    }
+}
+
+</style>
+
+<style>
+.loader {
+  display:inline-block;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 1px;
+  height: 1px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+
+<script>
+$(function () {
+    $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
+    $('.tree li.parent_li > span').on('click', function (e) {
+        $(this).parent('li.parent_li').siblings('li.parent_li').find(' > ul > li').hide('fast');
+        var children = $(this).parent('li.parent_li').find(' > ul > li');
+        if (children.is(":visible")) {
+            children.hide('fast');
+            $(this).attr('title', 'Expand this branch').find(' > i').addClass('icon-plus-sign').removeClass('icon-minus-sign');
+        } else {
+            children.find(' > ul >li').hide('fast'); /*to close opened childs in previous clicked parents */
+            children.show('fast');
+            $(this).attr('title', 'Collapse this branch').find(' > i').addClass('icon-minus-sign').removeClass('icon-plus-sign');
+        }
+        e.stopPropagation();
+    });
+});
+</script>
+
+<!-- TO display n number of coumns  
+
+<script>
+$(document).ready(function() {
+    $("ul#trackerlist").css("column-count", 2);
+});
+
+</script>
+--!>
+<!-- TO not to split child's hierarchy
+<style>
+#trackerlist >li.parent_li > ul {
+display: inline-block;
+}
+</style>
+--!>
+
+<script>
+function maintenance(e){
+    var getthevalue = $(e).attr('id');
+    $.ajax({
+        type: 'post',
+        url: '/iot/maintenance/',
+        data: {value: getthevalue},
+        success: function(msg) {
+              alert(msg.msg);
+        }
+    });
+}
+
+function stow(e){
+    var getthevalue = $(e).attr('id');
+    $.ajax({
+        type: 'post',
+        url: '/iot/stow/',
+        data: {value: getthevalue},
+        success: function(msg) {
+              alert(msg.msg);
+        }
+    });
+}
+
+function reset(e){
+    var getthevalue = $(e).attr('id');
+    $.ajax({
+        type: 'post',
+        url: '/iot/reset/',
+        data: {value: getthevalue},
+        success: function(msg) {
+              alert(msg.msg);
+        }
+    });
+}
+
+function firmwareupdate(e){
+    var getthevalue = $(e).attr('id');
+    $.ajax({
+        type: 'post',
+        url: '/iot/firmwareupdate/',
+        data: {value: getthevalue},
+        success: function(msg) {
+              alert(msg.msg);
+        }
+    });
+}
+</script>
+
+
+<div class="tree well">
+    <ul>
+       {% for master in masters %}
+        <li>
+            <span>
+            <i class="icon-folder-open"></i> {{master.device_id}}
+            <svg height=13 width=13>
+                {% if master.gateway.active == False and master.active == True %}
+		    <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="orange" />
+                {% else %}
+                    {% ifequal master.active True %}
+                      <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="green" />
+                    {% else %}
+                      <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="red" />
+                    {% endifequal %}
+                {% endif %}
+            </svg>
+           </span>
+             <i style="color:black;">Version:</i>
+             {% if master.fw_status == 1 %}
+                 <div class="loader"></div>
+             {% elif master.fw_status == 3 %}
+                 <b class="blink_failed"><font class="blink_failed">{{master.version}}</font></b>&nbsp;
+             {% else %}
+                 {% if master.version == master_latest_version %}
+                     <b><font style="color:green;">{{master.version}}</font></b>&nbsp;
+                 {% else %}
+                     <b><font style="color:blue;">{{master.version}}</font></b>&nbsp;
+                 {% endif %}
+             {% endif %}
+            <i style="color:black;">Trackers:</i><b><font style="color:blue;"> {{master.trackercontroller_set.count}}</font></b>&nbsp;
+            <a href="/iot/live_data/?device_type=MasterController&device_id={{master.id}}&param=wind_speed"><i><img src="/static/wind.png"/></i><b> {{master.wind_speed}} Kmph   &#x2197;{{master.wind_direction}}</b></a>
+             &nbsp;<i style="color:black;">Lat:{{master.latitude}}</i>
+             &nbsp;<i style="color:black;">Long:{{master.longitude}}</i>
+                   {% ifequal user.role.level 4 %}
+		     &nbsp;&nbsp; 
+		    <button type="submit" id="master_{{master.id}}" class="btn btn-primary master-upgrade" onclick="firmwareupdate(this)">Upgrade</button>
+                   {% endifequal %}
+       {% if master.high_wind == True %}
+        <img style="width:5%;" src="/static/high_wind.gif" />
+       {% endif %}
+
+
+            <ul id="trackerlist">
+                {% for tracker in master.trackercontroller_set.all %} 
+                 {% if tracker.reconfigured == True %}
+                   <li class="trackerlist-child-reconfigured">
+                 {% else %}
+                   <li class="trackerlist-child">
+                 {% endif %}
+
+
+                    <span>
+			 <svg height=13 width=13>
+                          {% if master.active == False or master.gateway.active == False %}
+                             {% ifequal tracker.active True %}
+			       <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="orange" />
+                             {% else %}
+			       <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="red" />
+                             {% endifequal %}
+                          {% else  %}
+                             {% ifequal tracker.active True %}
+			       <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="green" />
+                             {% else %}
+			       <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="red" />
+                             {% endifequal %}
+                          {% endif %}
+			 </svg>
+			 <i class="icon-minus-sign"></i>
+			  {{tracker.device_id}}
+
+                    </span> 
+                    <i style="color:black;">Version:</i>
+
+                    {% if tracker.fw_status == 1 %}
+                        <div class="loader"></div>
+                    {% elif tracker.fw_status == 3 %}
+                        <b class="blink_failed"><font class="blink_failed">{{tracker.version}}</font></b>&nbsp;
+                    {% else %}
+                        {% if tracker.version == tracker_latest_version %}
+                            <b><font style="color:green;">{{tracker.version}}</font></b>&nbsp;
+                        {% else %}
+                            <b><font style="color:blue;">{{tracker.version}}</font></b>&nbsp;
+                        {% endif %}
+                    {% endif %}
+                    {% get_active_actuators tracker.id as actuators %}
+                    <i style="color:black;">Actuators:</i><b><font style="color:blue;"> {{actuators.count}}</font></b>
+                    &nbsp;
+                    <a class="numeric-width" href="/iot/live_data/?device_type=TrackerController&device_id={{tracker.id}}&param=inner_temperature"><img src="/static/temperature.png"/><b> {{tracker.inner_temperature}}&#176;C</b></a>
+                    &nbsp;
+                    <img src="/static/ZigBee.png"/>
+                      {% ifequal tracker.wireless_connectivity True %}
+                          <b>&#10004;</b>
+                      {% else %}
+                          <b style="color:red;">&#10008;</b>
+                      {% endifequal %}
+                    
+                    &nbsp;
+                    <img src="/static/wired.png"/>
+                      {% ifequal tracker.wired_connectivity True %}
+                          <b>&#10004;</b>
+                      {% else %}
+                          <b style="color:red;">&#10008;</b>
+                      {% endifequal %}
+                    &nbsp;
+		    <a  class="numeric-width" href="/iot/live_data/?device_type=TrackerController&device_id={{tracker.id}}&param=target_angle">
+                             <img src="/static/target_angle.png"/><font style="color:black;"><b>T</b></font>
+                          <b> {{tracker.target_angle}}&#176;</b></a>&nbsp;
+
+
+                    {% if tracker.operating_mode == "AUTO" %}
+                        <a class="char-width"><img src="/static/toggle_switch_rev.png"/><b>&nbsp;{{tracker.operating_mode}}</b></a>
+                    {% else %}
+                        <a class="char-width"><img src="/static/toggle_switch.png"/><b>&nbsp;{{tracker.operating_mode}}</b></a>
+                    {% endif %}
+                    &nbsp;
+                    <i><b>Status:</b></i>
+                        {% if tracker.tracker_status == 0 %}
+                             Normal
+                         {% elif tracker.tracker_status == 1 %}
+                             Stow in progress
+                         {% elif tracker.tracker_status == 2 %}
+                             Stow
+                         {% elif tracker.tracker_status == 3 %}
+                             Reset
+                         {% elif tracker.tracker_status == 4 %}
+                             Cleaning Mode in progress
+                         {% elif tracker.tracker_status == 5 %}
+                             Cleaning
+                         {% endif %}
+
+                   {% ifequal user.role.level 4 %}
+		     &nbsp;&nbsp; 
+		    <div class="maintenance_div" style="text-align:center; padding-bottom:8px;"> <!-- right-align removed--!>
+		    <button type="submit" id="{{tracker.id}}" class="btn btn-primary cleaning-stow" onclick="maintenance(this)">Cleaning</button>
+		    &nbsp;&nbsp; 
+		    <button type="submit" id="{{tracker.id}}" class="btn btn-primary cleaning-stow" onclick="stow(this)">Stow</button>
+		     &nbsp;&nbsp; 
+		    <button type="submit" id="{{tracker.id}}" class="btn btn-primary cleaning-stow mg10" onclick="reset(this)">Reset</button>
+		     &nbsp;&nbsp; 
+		    <button type="submit" id="tracker_{{tracker.id}}" class="btn btn-primary cleaning-stow mg10" onclick="firmwareupdate(this)">Upgrade</button>
+			</div>
+                  {% endifequal %}
+
+                       
+
+                           <ul>
+                               {% for drive_controller in actuators %}
+                                <li>
+	                          <span><i class="icon-leaf"></i> <b>{{drive_controller.actuator_type}}</b>: {{drive_controller.device_id}} </span> 
+		                    <a class="numeric-width" href="/iot/live_data/?device_type=DriveController&device_id={{drive_controller.id}}&param=inclinometer_tilt_angle">
+                                    {% if drive_controller.inclinometer_status == 0 %}
+                                        <img src="/static/inclinometer_active.png"/>
+                                    {% elif drive_controller.inclinometer_status == 1 %}
+                                        <img src="/static/inclinometer_inactive.png"/>
+                                    {% else %}
+                                        <img src="/static/inclinometer_off.png"/>
+                                    {% endif %}
+                                     <b> {{drive_controller.inclinometer_tilt_angle}}&#176;</b></a>&nbsp;
+                		    <a class="numeric-width" href="/iot/live_data/?device_type=DriveController&device_id={{drive_controller.id}}&param=current_consumption">
+                                    {% if drive_controller.actuator_status == 0 %}
+                                        <img src="/static/drive_controller_active.png"/>
+                                    {% elif drive_controller.actuator_status == 1 %}
+                                        <img src="/static/drive_controller_inactive.png"/>
+                                    {% else %}
+                                        <img src="/static/drive_controller_off.png"/>
+                                    {% endif %}
+                                    <b> {{drive_controller.current_consumption}}A</b></a>
+                                    
+
+                		    <a class="numeric-width" href="/iot/live_data/?device_type=DriveController&device_id={{drive_controller.id}}&param=power_consumption">
+                                    {% if drive_controller.actuator_status == 0 %}
+                                      <img src="/static/power.png"/>
+                                    {% elif drive_controller.actuator_status == 1 %}
+                                      <img src="/static/power_inactive.png"/>
+                                    {% else %}
+                                        <img src="/static/power_off.png"/>
+                                    {% endif %}
+                                    <b> {{drive_controller.power_consumption}}kW</b></a>
+                                </li>
+                               {% endfor %}
+                           </ul>
+
+                 </li>
+                 {% endfor %}
+	    </ul>
+        </li>
+       {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}
+
+

@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block 'body' %}
+
+<style>
+.ul_container ul {
+    padding: 0; 
+    margin: 0;
+    list-style-type: none;
+}
+.ul_container ul li {
+    width: 200px;
+    float: left;
+    *zoom: 1;
+    text-align:center;
+    padding-top: 10px;
+    padding-bottom: 15px;
+
+}
+
+li a img {
+    width: 55px;
+    height: 55px;
+}
+h6 {
+    font-size: 12px;
+    color: #333333;
+    font-style: italic;
+    line-height: 5px; 
+}
+h6 > b {
+    color: black;
+}
+
+.custombtn{display:inline-block;padding:3px 6px;margin-bottom:0;font-size:10px;font-weight:normal;line-height:1.428571429;text-align:center;white-space:nowrap;vertical-align
+:middle;cursor:pointer;background-image:none;border:1px solid transparent;border-radius:4px;-webkit-user-select:none;-moz-user-select:none;-ms-user-se
+lect:none;-o-user-select:none;user-select:none; background-color:#a6bddb; color:#000;}
+</style>
+
+<style>
+.blink_failed {
+    animation-duration: 1s;
+    animation-name: blink_failed;
+    animation-iteration-count: infinite;
+    animation-timing-function: steps(2, start);
+}
+@keyframes blink_failed {
+from {
+       color: blue;
+    }
+to {
+    color: red;
+    }
+}
+
+</style>
+
+<style>
+.loader {
+  display:inline-block;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 49px;
+  height: 49px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+
+
+<script>
+function firmwareupdate(e){
+    var getthevalue = $(e).attr('id');
+    $.ajax({
+        type: 'post',
+        url: '/iot/firmwareupdate/',
+        data: {value: getthevalue},
+        success: function(msg) {
+              alert(msg.msg);
+        }
+    });
+}
+</script>
+
+
+
+<div class="breadcrumbs">
+	<a href="/iot/dashboard/">Home</a>  › 
+	Gateways
+</div>
+<div style="float:left; min-width: 400px; max-width: 100%; height: 1px; margin: 0 "></div>
+
+<br/>
+
+     <script type="text/javascript">
+        $(function () {
+            $('#regions').multiselect({
+                includeSelectAllOption: true
+            });
+           
+        });
+    </script>
+
+<div>
+
+<form action='.' method="POST" class="gateway-dropdwn">
+    <select id="regions" name="regions" multiple="multiple" required>
+        {% for region in regions %}
+            {% if region.id in selected_regions %}
+               <option value="{{region.id}}" selected>{{region.name}}</option>
+            {% else %}
+               <option value="{{region.id}}">{{region.name}}</option>
+            {% endif %}
+        {% endfor %}
+    </select>  
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="gatway-submit">
+<button type="submit" class="btn btn-primary">Submit</button>
+</div>
+</form>
+</div>
+
+
+<br/>
+
+{% regroup devices  by region__name as objects_by_region %}
+
+<div class="container pdl">
+  <div class="panel-group" id="accordion">
+
+     {% for region_wise_objects in objects_by_region%} 
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{forloop.counter}}"><b>{{region_wise_objects.list.0.region__name}}</b></a>
+        </h4>
+      </div>
+      <div id="collapse{{forloop.counter}}" class="panel-collapse collapse">
+        <div class="panel-body">
+          <div class="ul_container">
+          <ul class="devices">
+           {% for device in region_wise_objects.list %} 
+		<li>
+		<a href="/iot/masters/{{device.id}}/">
+                    {% if device.fw_status == 1 %}
+                        <div class="loader"></div>
+                    {% else %}
+		        <img src="/static/gateway.png">
+                    {% endif %}
+		    <h6>
+		    <svg height=13 width=13>
+			{% ifequal device.active True %}
+			  <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="green" />
+			{% else %}
+			  <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="red" />
+			{% endifequal %}
+		    </svg>
+		Device ID: <b>{{device.device_id|slice:"3:"}}</b>
+		   </h6>
+		    <h6>FW version:
+                 
+                     {% if device.fw_status == 3 %}
+                        <b class="blink_failed">{{device.version}}</b>&nbsp;
+                     {% else %}
+                        {% if latest_version == device.version %}
+                            <b><font style="color:green;">{{device.version}}</font></b>
+                        {% else %}
+                            <b>{{device.version}}</b>
+                        {% endif %}
+                     {% endif %}
+                    </h6>
+
+
+
+		    <h6>Masters: <b>{{device.masters_count}}</b>  Trackers: <b>{{device.trackers_count}}</b></h6>
+		</a> 
+                   {% ifequal user.role.level 4 %}
+		    <button type="submit" id="gateway_{{device.id}}" class="custombtn btn-primary" onclick="firmwareupdate(this)">Upgrade</button>
+                 <br/>
+                    {% endifequal %}
+	       </li>
+           {% endfor %}
+          </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+   {% endfor %}
+  </div> 
+</div>
+
+
+
+{% endblock %}
+
+

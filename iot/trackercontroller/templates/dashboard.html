@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block 'body' %}
+
+
+<!--
+<div class="breadcrumbs">
+	Home
+</div>
+--!>
+<br/>
+
+<script src="/static/highcharts.js"></script>
+<script src="/static/drilldown.js"></script>
+
+<style>
+#inactive b {
+color: red;
+}
+</style>
+
+
+<div class="row">
+<div id="container"  class="col-md-6 col-sm-12 col-xs-12" style="margin:0"></div>
+
+
+<div class="col-md-6 col-sm-12 col-xs-12" style="margin:0">
+<div class="table-responsive">
+<table class="features-table table gateway" border=2>
+   <tr><td></td>
+       <td align="center" colspan="2"><i>Gateways</i></td>
+       <td align="center" colspan="2"><i>Masters</i></td>
+       <td align="center" colspan="2"><i>Trackers</i></td>
+   </tr>
+   <tr><td align="center"></td>
+       <td align="center"><font color="green">Active</font></td>
+       <td align="center"><font color="red">Inactive</font></td>
+       <td align="center"><font color="green">Active</font></td>
+       <td align="center"><font color="red">Inactive</font></td>
+       <td align="center"><font color="green">Active</font></td>
+       <td align="center"><font color="red">Inactive</font></td>
+   </tr>
+
+       {% for region_summary in summary %}
+         <tr><td align="center"><i>{{region_summary.region}}</i></td>
+                <td align="center"><b> {{region_summary.active_gw}} </b></td>
+                {% ifequal  region_summary.inactive_gw 0 %}
+                    <td align="center"><b> {{region_summary.inactive_gw}} </b></td>
+                {% else %}
+                    <td id="inactive" align="center"><b> {{region_summary.inactive_gw}} </b></td>
+                {% endifequal %}
+                <td align="center"><b> {{region_summary.active_mc}} </b></td>
+                {% ifequal  region_summary.inactive_mc 0 %}
+                    <td align="center"><b> {{region_summary.inactive_mc}} </b></td>
+                {% else %}
+                    <td id="inactive" align="center"><b> {{region_summary.inactive_mc}} </b></td>
+                {% endifequal %}
+                <td align="center"><b> {{region_summary.active_tc}} </b></td>
+                {% ifequal  region_summary.inactive_tc 0 %}
+                    <td align="center"><b> {{region_summary.inactive_tc}} </b></td>
+                {% else %}
+                    <td id="inactive" align="center"><b> {{region_summary.inactive_tc}} </b></td>
+                {% endifequal %}
+          </tr>
+        {% endfor %}
+
+</table>
+</div>
+
+
+<div>
+<table class="features-table table" border=0>
+<tr><td>
+	<a href="/iot/inactive_devices/">
+	<i style="color:#008ccb;">Inactive Gateways:</i></a>
+	{% ifequal inactive_devices.total_inactive_gw 0 %}
+	   <b>{{inactive_devices.total_inactive_gw}}</b>
+	{% else %}
+	   <b style="color:red">{{inactive_devices.total_inactive_gw}}</b>
+	{% endifequal %}
+</td></tr>
+<tr><td>
+	<a href="/iot/inactive_devices/">
+	<i style="color:#008ccb;">Inactive Master Controllers:</i> 
+        </a>
+	{% ifequal inactive_devices.total_inactive_mc 0 %}
+	    <b> {{inactive_devices.total_inactive_mc}}</b> 
+	{% else %}
+	    <b style="color:red"> {{inactive_devices.total_inactive_mc}}</b> 
+	{% endifequal %}
+</td></tr>
+<tr><td>
+	<a href="/iot/inactive_devices/">
+	<i style="color:#008ccb;">Inactive Tracker Controllers:</i>
+        </a>
+	{% ifequal inactive_devices.total_inactive_tc 0 %}
+	    <b>{{inactive_devices.total_inactive_tc}}</b>
+	{% else %}
+	    <b style="color:red">{{inactive_devices.total_inactive_tc}}</b>
+	{% endifequal %}
+</td></tr>
+</table>
+</div>
+
+</div>
+</div>
+<script>
+function graphs() {
+
+    // Create the chart
+    $('#container').highcharts({
+        chart: {	
+            type: 'pie'
+        },
+        title: {
+            text: 'Trackers Overview'
+        },
+        subtitle: {
+            text: 'Region-wise'
+        },
+        plotOptions: {
+	
+           series: {
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.name}: {point.y:.0f}'
+                }
+            }
+        },
+
+        tooltip: {
+            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+            pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.0f}</b> <br/>'
+        },
+        series: [{
+            name: 'Gateways',
+            colorByPoint: true,
+            data: (function () {
+                 var regions = {{regions_list|safe}}, i, final_data=new Array(regions.length), final_data;
+                 for(i = 0, size = regions.length; i < size ; i++){
+                     var region = regions[i];
+                     final_data[i] = {"name": region.name, "y":region.gateway_count, "drilldown": region.name}
+                 }
+                 return final_data
+		}())
+        }],
+        drilldown: {
+            series: {{drilldown_list|safe}} }
+
+    });
+}
+
+graphs();	
+
+
+
+
+</script>
+
+
+
+
+{% endblock %}
+
+

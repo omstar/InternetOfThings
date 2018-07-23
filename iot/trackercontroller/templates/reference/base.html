@@ -1,0 +1,267 @@
+{% load staticfiles %}
+
+
+<!DOCTYPE html>
+
+<!--[if IE 9 ]><html class="ie9"><![endif]-->
+
+    <head>
+
+        <meta charset="utf-8">
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Mytrah</title>
+
+
+<link rel="stylesheet" type="text/css" href="/static/app.css" />
+       <!-- Vendor CSS -->
+
+
+        <link href="/static/sweet-alert.css" rel="stylesheet">
+
+
+            
+
+        <!-- CSS -->
+
+        <link href="/static/app.min.1.css" rel="stylesheet">
+
+        <link href="/static/app.min.2.css" rel="stylesheet">
+
+        
+
+    </head>
+
+
+    <body style="background-color:#eeeeee;">
+
+        <header id="header" class="clearfix" data-current-skin="blue">
+
+            <ul class="header-inner">
+
+                <li id="menu-trigger" data-trigger="#sidebar">
+
+                    <div class="line-wrap">
+
+                        <div class="line top"></div>
+
+                        <div class="line center"></div>
+
+                        <div class="line bottom"></div>
+
+                    </div>
+
+                </li>
+
+
+
+                <li class="logo">
+
+                    <!--<a href="/dashboard"><img style="height:50%;width:50%;" src="/static/mytrah-logo.png"></img></a>--!>
+                    <a href="/dashboard/">Mytrah</a>
+
+                </li>
+
+
+
+
+
+            </ul>
+
+
+<style>
+ #user-tools a  {
+    color:white;
+}
+</style>
+
+ <div id="user-tools" style="float:right;font-size:11px;color:white;">
+            
+                Welcome,
+                <strong style="color:#f4f379;">demo2</strong>.
+            
+            
+                <!--
+                    <a href="/">View site</a> /
+                
+                --!>
+                
+                    
+  
+                
+                
+                <a href="/admin/password_change/">Change password</a> /
+                
+                <a href="/logout/">Log out</a>
+            
+        </div>
+
+
+
+        </header>
+
+ <style>
+ #side-menu a  {
+        text-decoration: none !important;
+}
+</style>
+       
+        
+       <div id="side-menu">
+        <section id="main" data-layout="layout-1" >
+            <aside id="sidebar" class="sidebar c-overflow">
+
+                
+
+
+                <ul class="main-menu">
+
+
+                    <li class="sub-menu">
+
+                        <a href="">Regions</a>
+
+                        <ul>
+                            <li><a href="#">&nbsp;&nbsp;&nbsp;&nbsp;Gachibowli</a></li>
+                            <li><a href="#">&nbsp;&nbsp;&nbsp;&nbsp;Madhapur</a></li>
+                            <li><a href="#">&nbsp;&nbsp;&nbsp;&nbsp;HiTech City</a></li>
+
+                        </ul>
+
+                    </li>
+
+                </ul>
+
+                    <ul class="main-menu">
+
+                        <li>
+
+                            <a href="/analytics/">Reports</a>
+                        </li>
+
+
+
+            </aside>
+
+            
+
+            <aside id="chat" class="sidebar c-overflow">
+
+            
+
+                <div class="chat-search">
+
+                    <div class="fg-line">
+                         <b>Modes</b>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="listview">
+                </div>
+
+            </aside>
+
+            
+
+            
+
+            <section id="content">
+
+                <div class="container">
+
+                     {% block 'body' %}
+                     {% endblock %}
+
+
+                </div>
+
+            </section>
+
+        </section>
+
+</div>        
+        <footer id="footer">
+
+            <ul class="f-menu">
+
+                <li><a  target="blank" href="http://www.mytrah.com/">Home</a></li>
+
+                <li><a target="blank" href="http://www.mytrah.com/about-mytrah-energy-ltd.php">About</a></li>
+
+                <li><a target="blank" href="http://www.mytrah.com/contact-us.php">Contact</a></li>
+
+            </ul>
+
+        </footer>
+
+
+
+
+        
+
+        <script src="/static/jquery.flot.js"></script>
+
+        <script src="/static/jquery.flot.resize.js"></script>
+
+
+        <script src="/static/moment.min.js"></script>
+
+        <script src="/static/bootstrap-growl.min.js"></script>
+
+        <script src="/static/sweet-alert.min.js"></script>
+
+        <script src="/static/jquery.mCustomScrollbar.concat.min.js"></script>
+
+        
+        <script src="/static/functions.js"></script>
+
+        <script src="/static/demo.js"></script>
+
+        <script>
+
+$(window).load(function(){
+    //Welcome Message (not for login page)
+    function notify(message, type){
+        $.growl({
+            message: message
+        },{
+            type: type,
+            allow_dismiss: false,
+            label: 'Cancel',
+            className: 'btn-xs btn-inverse',
+            placement: {
+                from: 'top',
+                align: 'right'
+            },
+            delay: 2500,
+            animate: {
+                    enter: 'animated fadeIn',
+                    exit: 'animated fadeOut'
+            },
+            offset: {
+                x: 20,
+                y: 85
+            }
+        });
+    };
+
+});
+
+        </script>
+
+        
+       {% block 'script' %}
+       {% endblock %}
+
+    </body>
+
+  </html>
+
+

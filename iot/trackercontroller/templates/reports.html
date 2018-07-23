@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block 'body' %}
+
+
+    <script type="text/javascript">
+        $(function () {
+            $('#regions').multiselect({
+                includeSelectAllOption: true
+            });
+           
+            $('#device_type').multiselect({
+                includeSelectAllOption: true
+            });
+
+            $('#property').multiselect({
+                includeSelectAllOption: true
+            });
+        });
+    </script>
+
+
+<div class="breadcrumbs">
+        <a href="/iot/dashboard/">Home</a>  ›
+      {% if selected_device_type %}
+          <a href="/iot/reports/">Reports</a>  ›
+          {{selected_device_type|title}} Report
+       {% else %}
+           Reports
+      {% endif %} 
+</div>
+
+
+<br/>
+
+<div class="tree well">
+<form action="." method="POST">
+
+    <table class="report-table">
+
+    <tr>
+    <td>
+    <label for="country">Region: </label>
+    <select id="regions" name="selected_regions" multiple="multiple" required>
+       {% for region in regions %}
+           {% if region.id in selected_regions %}
+              <option value="{{region.id}}" selected="selected">{{region.name}}</option>
+           {% else %}
+              <option value="{{region.id}}">{{region.name}}</option>
+           {% endif %}
+       {% endfor %}
+    </select>
+    </td>
+    <td>
+    <label for="country">  &nbsp;&nbsp; Device Type: </label>
+    <select id="device_type" name="device_type" >
+     {% for device_type in device_types %}
+      {% ifequal selected_device_type device_type %}
+            {{selected_device_type}} {{device_type}}
+          <option value="{{device_type}}" selected="selected">{{device_type|title}}</option>
+      {% else %}
+          <option value="{{device_type}}">{{device_type|title}}</option>
+      {% endifequal %}
+     {% endfor %}
+    </select>
+    </td>
+
+    <td>
+    &nbsp;&nbsp; 
+    &nbsp;&nbsp; 
+    <button style="float:right;" type="submit" class="btn btn-primary">Submit</button>
+    </td>
+
+    </tr>
+    </table>
+
+    <!--
+    <div name="other_params" class="other_params" id="other_params">
+    <table>
+    <tr>
+    <td>
+    <br/>
+    <label for="country">Property: </label>
+    <select id="property" name="property">
+      <option value=""> None</option>
+      <option value="australia">Wind Speed</option>
+      <option value="canada">Inner Temperature</option>
+    </select>
+    </td>
+    </tr>
+
+
+    <tr><td>
+      <br/>
+      <p>From Date: <input type="text" id="datepicker"></p>
+    </td>
+
+
+    <td>
+      <br/> 
+      <p>&nbsp;&nbsp;&nbsp;Till Date: <input type="text" id="datepicker1"></p>
+    </td></tr>
+    </table>
+    </div>
+  --!>
+  </form>
+</div>
+{% if selected_device_type|length == 7 %}
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if gateways.has_previous %}
+		    <a href="?page={{ gateways.previous_page_number }}&device_type=gateway&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ gateways.number }}</b> of <b>{{ gateways.paginator.num_pages }}</b>.
+		</span>
+
+		{% if gateways.has_next %}
+		    <a href="?page={{ gateways.next_page_number }}&device_type=gateway&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=gateway&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=gateway&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+    
+   
+	<table class="features-table">
+	  <tr>
+	   <td><b>Region</b></td> <td><b>Device ID</b></td> <td><b>Masters</b></td> <td><b>Trackers</b></td><td><b>Active</b></td>
+           <td><b>
+               <svg height=13 width=13> <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="red" /></svg> Inactive since</b></td>
+	  </tr>
+	  {% for gateway in gateways %}
+	  <tr>
+	   <td> {{gateway.region__name}} </td>
+	   <td> {{gateway.device_id}} </td>
+	   <td> {{gateway.masters_count}} </td>
+	   <td> {{gateway.trackers_count}} </td>
+	   <td> 
+                {% if gateway.active == False %}
+                     <font style="color:red;">{{gateway.active}}</font>
+                {% else %}
+                     {{gateway.active}} 
+                {% endif %}
+           </td>
+	   <td>
+               {% if gateway.inactive_at != None %}
+                   {{gateway.inactive_at|date:"d/m/Y H:i"}} 
+               {% endif %}
+           </td>
+
+
+	  </tr>
+	  {% endfor %}
+	</table>
+   
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if gateways.has_previous %}
+		    <a href="?page={{ gateways.previous_page_number }}&device_type=gateway&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ gateways.number }}</b> of <b>{{ gateways.paginator.num_pages }}</b>.
+		</span>
+
+		{% if gateways.has_next %}
+		    <a href="?page={{ gateways.next_page_number }}&device_type=gateway&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=gateway&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=gateway&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+{% elif selected_device_type|length == 17 %}
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if masters.has_previous %}
+		    <a href="?page={{ masters.previous_page_number }}&device_type=master controller&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ masters.number }}</b> of <b>{{ masters.paginator.num_pages }}</b>.
+		</span>
+
+		{% if masters.has_next %}
+		    <a href="?page={{ masters.next_page_number }}&device_type=master controller&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=master controller&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=master controller&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+
+       	<table class="features-table">
+	  <tr>
+	   <td><b>Region</b></td> <td><b>Device ID</b></td>  <td><b>Gateway ID</b></td> <td><b>Trackers</b></td> <td><b>Wind Speed</b></td><td><b>Active</b></td><td><b><svg height=13 width=13> <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="red" /></svg> Inactive since</b></td>
+	  </tr>
+	  {% for master in masters %}
+	  <tr>
+	   <td> {{master.gateway__region__name}} </td>
+	   <td> {{master.device_id}} </td>
+	   <td> {{master.gateway__device_id}} </td>
+	   <td> {{master.trackers_count}} </td>
+	   <td> {{master.wind_speed}} </td>
+	   <td> 
+                {% if master.active == False %}
+                     <font style="color:red;">{{master.active}}</font>
+                {% else %}
+                     {{master.active}} 
+                {% endif %}
+           </td>
+	   <td>
+               {% if master.inactive_at != None %}
+                   {{master.inactive_at|date:"d/m/Y H:i"}} 
+               {% endif %}
+           </td>
+	  </tr>
+	  {% endfor %}
+	</table>
+     
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if masters.has_previous %}
+		    <a href="?page={{ master.previous_page_number }}&device_type=master controller&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ masters.number }}</b> of <b>{{ masters.paginator.num_pages }}</b>.
+		</span>
+
+		{% if masters.has_next %}
+		    <a href="?page={{ masters.next_page_number }}&device_type=master controller&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=master controller&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=master controller&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+{% elif selected_device_type|length == 18 %}
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if trackers.has_previous %}
+		    <a href="?page={{ trackers.previous_page_number }}&device_type=tracker controller&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ trackers.number }}</b> of <b>{{ trackers.paginator.num_pages }}</b>.
+		</span>
+
+		{% if trackers.has_next %}
+		    <a href="?page={{ trackers.next_page_number }}&device_type=tracker controller&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=tracker controller&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=tracker controller&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+
+       <div class="table-responsive">
+	<table class="features-table">
+	  <tr>
+	   <td><b>Region</b></td> <td><b>Device ID</b></td> <td><b>Master ID</b></td> <td><b>Gateway ID</b></td> <td><b>Actuators</b></td> <td><b>Inner Temp</b></td>   <td><b>RS485</b></td>   <td><b>ZigBee</b></td>   <td><b>Active</b></td> <td><b><svg height=13 width=13> <circle cx="7" cy="7" r="5" stroke="black" stroke-width="1" fill="red" /></svg> Inactive since</b></td>
+	  </tr>
+	  {% for tracker in trackers %}
+	  <tr>
+	   <td> {{tracker.master_controller__gateway__region__name}} </td>
+	   <td> {{tracker.device_id}} </td>
+	   <td> {{tracker.master_controller__device_id}} </td>
+	   <td> {{tracker.master_controller__gateway__device_id}} </td>
+	   <td> {{tracker.drive_controllers_count}} </td>
+	   <td> {{tracker.inner_temperature}} </td>
+	   <td> {{tracker.wired_connectivity}} </td>
+	   <td> {{tracker.wireless_connectivity}} </td>
+	   <td> 
+                {% if tracker.active == False %}
+                     <font style="color:red;">{{tracker.active}}</font>
+                {% else %}
+                     {{tracker.active}} 
+                {% endif %}
+           </td>
+	   <td>
+               {% if tracker.inactive_at != None %}
+                   {{tracker.inactive_at|date:"d/m/Y H:i"}} 
+               {% endif %}
+           </td>
+	  </tr>
+	  {% endfor %}
+	</table>
+        </div>
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if trackers.has_previous %}
+		    <a href="?page={{ trackers.previous_page_number }}&device_type=tracker controller&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ trackers.number }}</b> of <b>{{ trackers.paginator.num_pages }}</b>.
+		</span>
+
+		{% if trackers.has_next %}
+		    <a href="?page={{ trackers.next_page_number }}&device_type=tracker controller&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=tracker controller&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=tracker controller&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+
+{% elif selected_device_type|length == 16 %}
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if drive_controllers.has_previous %}
+		    <a href="?page={{ drive_controllers.previous_page_number }}&device_type=drive controller&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ drive_controllers.number }}</b> of <b>{{ drive_controllers.paginator.num_pages }}</b>.
+		</span>
+
+		{% if drive_controllers.has_next %}
+		    <a href="?page={{ drive_controllers.next_page_number }}&device_type=drive controller&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=drive controller&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=drive controller&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+
+
+	<table class="features-table">
+	  <tr>
+	   <td><b>Region</b></td> <td><b>Device ID</b></td> <td><b>Tracker ID</b></td>  <td><b>Master ID</b></td> <td><b>Gateway ID</b></td>   <td><b>Inclinometer<br/>Angle</b></td> <td><b>Current<br/>Consumption</b></td>
+	  </tr>
+	  {% for record in drive_controllers %}
+	  <tr>
+	   <td> {{record.tracker_controller__master_controller__gateway__region__name}} </td>
+	   <td> {{record.device_id}} </td>
+	   <td> {{record.tracker_controller__device_id}} </td>
+	   <td> {{record.tracker_controller__master_controller__device_id}} </td>
+	   <td> {{record.tracker_controller__master_controller__gateway__device_id}} </td>
+	   <td> {{record.inclinometer_tilt_angle}} </td>
+	   <td> {{record.current_consumption}} </td>
+	  </tr>
+	  {% endfor %}
+	</table>
+
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if drive_controllers.has_previous %}
+		    <a href="?page={{ drive_controllers.previous_page_number }}&device_type=drive controller&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ drive_controllers.number }}</b> of <b>{{ drive_controllers.paginator.num_pages }}</b>.
+		</span>
+
+		{% if drive_controllers.has_next %}
+		    <a href="?page={{ drive_controllers.next_page_number }}&device_type=drive controller&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=drive controller&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=drive controller&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+
+{% elif selected_device_type|length == 11 %}
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if maintenance_reports.has_previous %}
+		    <a href="?page={{ maintenance_reports.previous_page_number }}&device_type=maintenance&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ maintenance_reports.number }}</b> of <b>{{ maintenance_reports.paginator.num_pages }}</b>.
+		</span>
+
+		{% if maintenance_reports.has_next %}
+		    <a href="?page={{ maintenance_reports.next_page_number }}&device_type=maintenance&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=maintenance&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=maintenance&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+
+
+	<table class="features-table">
+	  <tr>
+	   <td><b>Region</b></td> <td><b>Action</b></td>  <td><b>Action By</b></td> <td><b>Tracker ID</b></td>  <td><b>Master ID</b></td> <td><b>Gateway ID</b></td>   <td><b>Action Time</b></td>
+	  </tr>
+	  {% for record in maintenance_reports %}
+	  <tr>
+	   <td> {{record.region__name}} </td>
+	   <td> {{record.action}} </td>
+	   <td> {{record.email}} </td>
+	   <td> {{record.tracker_controller__device_id}} </td>
+	   <td> {{record.master_controller__device_id}} </td>
+	   <td> {{record.gateway__device_id}} </td>
+	   <td> {{record.created_at}} </td>
+	  </tr>
+	  {% endfor %}
+	</table>
+
+	<div class="pagination" style="text-align:center;width:100%">
+	    <span class="step-links">
+		{% if maintenance_reports.has_previous %}
+		    <a href="?page={{ maintenance_reports.previous_page_number }}&device_type=maintenance&selected_regions={{selected_regions}}"><b>Previous</b></a>
+		{% endif %}
+
+		<span class="current">
+		    Page <b>{{ maintenance_reports.number }}</b> of <b>{{ maintenance_reports.paginator.num_pages }}</b>.
+		</span>
+
+		{% if maintenance_reports.has_next %}
+		    <a href="?page={{ maintenance_reports.next_page_number }}&device_type=maintenance&selected_regions={{selected_regions}}"><b>Next</b></a>
+		{% endif %}
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=maintenance&selected_regions={{selected_regions}}&download=csv"><img src="/static/csv.png"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="?device_type=maintenance&selected_regions={{selected_regions}}&download=pdf"><img src="/static/pdf.png"/></a>
+	    </span>
+	</div>
+
+{% endif %}
+
+{% endblock %}
+
+

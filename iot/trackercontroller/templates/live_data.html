@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block 'script' %}
+
+<script type="text/javascript" src="/static/jquery-1.8.3.min.js"></script>
+<script type="text/javascript">
+var jQuery_1_8_3 = $.noConflict(true);
+</script>
+
+<script src="/static/highcharts.js"></script>
+<script src="/static/exporting.js"></script>
+<script src="/static/boost.js"></script>
+
+<script>
+jQuery_1_8_3(function () {
+    jQuery_1_8_3(document).ready(function () {
+        Highcharts.setOptions({
+            global: {
+                useUTC: false
+            }
+        });
+
+        $('#container').highcharts({
+            chart: {
+                zoomType: 'x',
+                panning: true,
+                panKey: 'shift',
+                type: "line",
+                rangeSelector: {
+                    selected: 2
+                  },
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 0,
+                events: {
+                    load: function () {
+                       
+                        // set up the updating of the chart each second
+                        var series = this.series[0], series1 = this.series[1], 
+                            devices_data_id = {{devices_data_id}},
+                            target_angle_devices_data_id = {{target_angle_devices_data_id}},
+                            device_id = {{device_id}},
+                            device_type = '{{device_type}}',
+                            param = '{{param}}';
+                        setInterval(function () {
+				function updateData()
+				{
+				var html = $.ajax({
+				url: "/iot/live_data/streaming/",
+				type: "POST",
+				data: {"devices_data_id": devices_data_id,
+                                       "device_id": device_id,
+                                       "target_angle_devices_data_id": target_angle_devices_data_id,
+                                       "device_type": device_type,
+                                       "param": param  
+                                       },
+				success: function(data) {
+                                  for(i = 0, size = data.data[0].length; i < size ; i++){
+                                    var item = data.data[0][i];
+				    var x = parseInt(item.on)*1000, // current time
+					y = item.value;
+				    series.addPoint([x, y], true, false);
+                                    devices_data_id = data.devices_data_id;
+				  }
+
+                                  for(i = 0, size = data.data[1].length; i < size ; i++){
+                                    var item = data.data[1][i];
+				    var x = parseInt(item.on)*1000, // current time
+					y = item.value;
+				    series1.addPoint([x, y], true, false);
+                                    target_angle_devices_data_id = data.target_angle_devices_data_id;
+				  }
+				}
+				});
+				}
+                                updateData() 
+                        }, 5000);
+                    }
+                }
+            },
+            title: {
+                text: 'Live Streaming - ' +  '{{today}}'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 100,
+                title: {
+                    text: 'DateTime'.bold()
+                }
+
+            },
+            yAxis: {
+                title: {
+                    text: '{{param}}'.replace('_', ' ').toUpperCase().bold()
+                },
+
+                tickInterval: 2
+            },
+       
+            legend: {
+                enabled: true
+            },
+            exporting: {
+                enabled: true
+            },
+            plotOptions:{
+                series:{
+                    turboThreshold:5000//larger threshold or set to 0 to disable
+                }
+            },
+            series: (function () {
+                    var data_from_backend = {{data|safe}},
+                        i, j, final_data= new Array(data_from_backend.length);
+                     var device_names = {{device_names|safe}};
+                     var listsize = data_from_backend.length;
+                    for(j = 0, listsize; j<listsize; j++){
+                       var data = [];
+                       var one_device_data = data_from_backend[j];
+                        
+                      for(i = 0, size = one_device_data.length; i < size ; i++){
+                        var item = one_device_data[i];  
+                        data.push({
+                            x: parseInt(item.on) *1000,
+                            y: item.value 
+                        });
+                    }
+                   final_data[j] = {"data": data,  marker : {enabled : true, radius : 3}, "name": device_names[j]}
+                   }
+                    return final_data;
+                }())
+        });
+    });
+});
+</script>
+
+
+{% endblock %}
+
+
+{% block 'body' %}
+
+
+<div class="breadcrumbs">
+	<a href="/iot/dashboard/">Home</a>  › 
+	 {{device_type}} › {{param}} › Live Data
+</div>
+
+
+<link rel="stylesheet" href="/static/jquery-ui.css" />
+<script src="/static/jquery-ui.js"></script>
+<script>
+  $(function() {
+    $( "#datepicker, #datepicker1" ).datepicker();
+  });
+</script>
+
+
+<script>
+function comparedate(){
+        var D1 = document.getElementById("datepicker").value;
+        var D2 = document.getElementById("datepicker1").value;
+ 
+        if (D1 == '' || D2 == ''){return true}
+
+        if (D1 != ''){
+            var month = D1.substring(0, 2);
+            var date = D1.substring(3, 5);
+            var year = D1.substring(6, 10);
+
+            var myDate = new Date(year, month - 1, date);
+
+            var today = new Date();
+
+            if (myDate > today) {
+                document.getElementById('datepicker').style.borderColor = "red";
+                document.getElementById('errors').innerHTML="<text style='color:red;'>Date should not be greater than todays date!</text>"
+                document.getElementById('datepicker1').style.borderColor = "lightgrey";
+                return false
+            }
+         }
+
+        if (D2 != ''){
+
+            var month = D2.substring(0, 2);
+            var date = D2.substring(3, 5);
+            var year = D2.substring(6, 10);
+
+            var myDate = new Date(year, month - 1, date);
+
+            var today = new Date();
+
+            if (myDate > today) {
+                document.getElementById('datepicker1').style.borderColor = "red";
+                document.getElementById('errors').innerHTML="<text style='color:red;'>Date should not be greater than todays date!</text>"
+                document.getElementById('datepicker').style.borderColor = "lightgrey";
+                return false
+            }
+         }
+
+ 
+	if ((new Date(D1).getTime()) <= (new Date(D2).getTime())) {
+	    return true
+	} else {
+            document.getElementById('datepicker1').style.borderColor = "red";
+            document.getElementById('errors').innerHTML="<text style='color:red;'>From date should be less than Till date!</text>"
+	    return false
+	}
+ }
+</script>
+
+<form action="/iot/live_data/" method="POST">
+    <div name="other_params" class="other_params" id="other_params">
+
+    <table>
+
+    <tr><td>
+      <br/>
+      <p><b>From Date:</b> <input name="from_date" type="text" id="datepicker"></p>
+    </td>
+
+
+    <td>
+      <br/> 
+      <p>&nbsp;&nbsp;&nbsp;<b>Till Date:</b> <input name="till_date" type="text" id="datepicker1"></p>
+    </td>
+    <td>
+    &nbsp;&nbsp; 
+    &nbsp;&nbsp; 
+    <button type="submit" name="filter" class="btn btn-primary" onclick="javascript:return comparedate();"> Submit</button>
+        </td>
+
+    </tr>
+
+    </table>
+
+    <div id ="errors">
+     </div>
+    <input type="hidden" name="device_id", value="{{device_id}}"/>
+    <input type="hidden" name="device_type", value="{{device_type}}"/>
+    <input type="hidden" name="param", value="{{param}}"/>
+ 
+
+    </div>
+</form>
+
+
+
+
+   <div id="container" style="min-width: 310px; height: 400px; padding-top:20px; margin: 0 auto;"></div>
+
+{% endblock %}

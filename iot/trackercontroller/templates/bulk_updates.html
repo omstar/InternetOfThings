@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block 'body' %}
+
+<div class="breadcrumbs">
+	<a href="/iot/dashboard/">Home</a>  › 
+        Bulk Update
+</div>
+
+
+<br/>
+
+    <script type="text/javascript">
+        $(function () {
+            $('#actions').multiselect({
+
+            });
+           
+            $('#device_type').multiselect({
+                includeSelectAllOption: false
+            });
+
+            $('#property').multiselect({
+                includeSelectAllOption: false
+            });
+        });
+    </script>
+
+
+
+<script>
+$(document).ready(function () {
+    function hideAll() {
+        $('#cleaning_stow').hide();
+        $('#fw_update').hide();
+        $('#masters').hide();
+        $('#gateways').hide();
+    }
+    hideAll();
+    $('#actions').change(function() {
+        hideAll();
+
+        var all_checkboxes = jQuery(':checkbox');
+        all_checkboxes.prop('checked', false);
+
+        var val = $(this).val();
+        if (val == "CLEANING" || val == "STOW" || val=="RESET") {
+            $("#cleaning_stow").show();
+	    $("#property option:eq(0)").attr("selected",true);    
+	    setTimeout(function(){
+	    $('#property').multiselect("refresh");
+            $('#property').prop('required',true);
+            $('#device_type').prop('required',false);
+
+	});
+
+        } else if  (val == "FIRMWARE_UPDATE")  {
+            $("#fw_update").show();
+	    $("#device_type option:eq(0)").attr("selected",true);
+            setTimeout(function(){
+	    $('#device_type').multiselect("refresh");
+            $('#property').prop('required',false);
+            $('#device_type').prop('required',true);
+
+	});
+        }else{
+            hideAll();
+        }
+           
+    });
+});
+</script>
+<script>
+$(document).ready(function () {
+    function hideAll() {
+        $('#masters').hide();
+        $('#gateways').hide();
+    }
+    hideAll();
+    $('#device_type, #property').change(function() {
+        hideAll();
+        var val = $(this).val();
+        if (val == "MasterController") {
+            $("#gateways").show();
+        } else if  (val == "TrackerController")  {
+            $("#masters").show();
+        } else{
+            hideAll();
+        }
+           
+    });
+});
+</script>
+
+
+<script>
+function atleast_onecheckbox(e) {
+  if ($("input[type=checkbox]").length == 0) {
+        alert('There are no devices to perform your action!');
+        return false;
+     }
+  if ($("input[type=checkbox]:checked").length === 0) {
+      e.preventDefault();
+      alert('Atleast one checkbox has to be selected to submit!');
+      return false;
+  }
+  alert("Commands sent successfully!");
+}
+</script>
+
+
+
+<div class="tree well">
+   <form onsubmit="return atleast_onecheckbox(event)" action="/iot/bulk_updates_proc/" method="POST">
+    <table >
+
+    <tr>
+    <td class="action-coloum">
+    <label for="action">Action: </label>
+    <select class="selectpicker" id="actions" name="selected_action" required>
+         <option >NONE</option>
+       {% for action in actions %}
+           {% if action == selected_action %}
+              <option value="{{action}}" selected="selected">{{action}}</option>
+           {% else %}
+              <option value="{{action}}">{{action}}</option>
+           {% endif %}
+       {% endfor %}
+    </select>
+    </td>
+
+
+    </table>
+
+
+    <div name="cleaning_stow" class="cleaning_stow" id="cleaning_stow">
+    <br/>
+    <table>
+    <tr>
+    <td class="device-coloum">
+    <label for="device_type" class="w100">Device Type:</label>
+    <select id="property" name="property" required>
+      <option value="">None</option>
+      <option value="TrackerController">TrackerController</option>
+    </select>
+    </td>
+    <td>&nbsp;&nbsp;</td>
+
+    {% if masters %}
+        <td>
+        <button style="float:right;" type="submit" class="btn btn-primary bulk-submit">Submit</button>
+        </td>
+    {% endif %}
+
+    </tr>
+    </table>
+    </div>
+
+    <div name="fw_update" class="fw_update" id="fw_update">
+    &nbsp;&nbsp; 
+    &nbsp;&nbsp; 
+
+    <br/>
+    <table>
+    <tr>
+    <td class="device-coloum">
+    <label for="device_type">Device Type:</label>
+    <select id="device_type" name="device_type" required>
+      <option value="">None</option>
+      <option value="MasterController">MasterController</option>
+      <option value="TrackerController">TrackerController</option>
+    </select>
+    </td>
+    <td>&nbsp;&nbsp;</td>
+    {% if gateways %}
+        <td>
+        <button style="float:right;" type="submit" class="btn btn-primary bulk-submit">Submit</button>
+        </td>
+    {% endif %}
+    </tr>
+    </table>
+   </div>
+
+    <br/>
+
+    <div name="masters" class="masters" id="masters">
+    <div class="table-responsive">
+     {% if masters %}
+        <table border=2 class="features-table table">
+         {% for master in masters %}
+        <tr>
+        <td>{{master.gateway.region.name}}</td>
+        <td>{{master.gateway.device_id}}</td>
+        <td>{{master.device_id}}</td>
+        <td>All Trackers</td>
+        <td><input type="checkbox" name="devices" value="{{master.id}}"></td>
+        </tr>
+        {% endfor %}
+        </table>
+     {% else %}
+         <div style="text-align:center"><h4><i><b>No devices registered yet!</b></i></h4></div>
+     {% endif %}
+    </div>
+    </div>
+    <div name="gateways" class="gateways table-responsive" id="gateways">
+    {% if gateways %}
+        <table border=2 class="features-table table">
+         {% for gateway in gateways %}
+        <tr>
+        <td>{{gateway.region.name}}</td>
+        <td>{{gateway.device_id}}</td>
+        <td>All Masters</td>
+        <td><input type="checkbox" name="devices" value="{{gateway.id}}"></td>
+        </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+         <div style="text-align:center"><h4><i><b>No devices registered yet!</b></i></h4></div>
+     {% endif %}
+    </div>
+
+
+
+ </form>
+</div>
+
+
+
+{% endblock %}
+
+
